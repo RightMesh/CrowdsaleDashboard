@@ -10,9 +10,7 @@ class Content extends React.Component {
               <div class='container' >
                 <div class="row">
                   <div class="col-lg-8 col-md-8 col-sm-12">
-                    <a class="navbar-brand" href="https://rightmesh.io/">
-                      <img class="logo" src="../img/rightmesh-logo.png" alt="RightMesh" />
-                    </a>
+                    <img class="logo" src="../img/rightmesh-logo.png" alt="RightMesh" />
                     <h1>Crowdsale Dashboard</h1>
                   </div>
                   <div class="col-lg-4 col-md-4 col-sm-12 align-self-end wallet-stats">
@@ -28,6 +26,9 @@ class Content extends React.Component {
                     weiRaised={this.props.weiRaised}
                     rate = {this.props.rate}
                     cap = {this.props.cap}
+                    contributors = {this.props.contributors}
+                    progressPercent = {this.props.progressPercent}
+                    progressBar = {this.props.progressBar}
                     minContribution = {this.props.minContribution}
                     mintingFinished = {this.props.mintingFinished}
                     hasEnded = {this.props.hasEnded}
@@ -36,7 +37,7 @@ class Content extends React.Component {
                     tokenAddr = {this.props.tokenAddr}
                     startTime = {this.props.startTime}
                     endTime = {this.props.endTime} />
-                <hr/>
+
                 <Table successTransfers={this.props.successTransfers} />
             </section>
         )
