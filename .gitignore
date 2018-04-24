@@ -1,2 +1,7 @@
 # Don't version any IDE files.
 .idea/
+
+# ignore node.js installed packages
+node_modules/
+
+package-lock.json
