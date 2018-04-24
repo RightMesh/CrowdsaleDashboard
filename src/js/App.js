@@ -1,3 +1,4 @@
+/* jshint ignore:start */
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Web3 from 'web3'
@@ -5,6 +6,7 @@ import TruffleContract from 'truffle-contract'
 import MeshCrowdsale from '../../build/contracts/MeshCrowdsale.json'
 import Content from './Content'
 import 'bootstrap/dist/css/bootstrap.css'
+import '../css/style.css'
 
 const config = require('../config');
 
@@ -15,6 +17,9 @@ class App extends React.Component {
             loading: true,
             rate: 0,
             cap: 0,
+            contributors: 0,
+            progressPercent: 0,
+            progressBar: 0,
             minContribution: 0,
             startTime: 0,
             endTime: 0,
@@ -79,6 +84,7 @@ class App extends React.Component {
             this.fetchWeiRaised()
             this.setState({loading: false})
             this.watchContractEvents()
+
         }).catch(function(error) {
             console.error(error)
         })
@@ -87,6 +93,9 @@ class App extends React.Component {
     fetchWeiRaised() {
         this.crowdsaleInstance.weiRaised.call().then((weiRaised) => {
             this.setState({ weiRaised: weiRaised.toNumber() / (10**18) })
+            this.setState({ progressPercent: Math.round(((this.state.weiRaised / this.state.cap)*100)*100)/100 })
+            this.setState({ progressBar: Math.round(((this.state.weiRaised / this.state.cap)*100)*100)/10000 })
+            this.setState({ contributors: this.state.contributors + 1 })
         }).catch(function(error) {
             console.error(error)
         })
@@ -155,31 +164,29 @@ class App extends React.Component {
 
     render() {
         return (
-            <div class='row'>
-                <div class='col-lg-12 text-center' >
-                    <h1>Dashboard</h1>
-                    <br/>
-                    <hr/>
-                    { this.state.loading
-                        ? <p class='text-center'>Loading...</p>
-                        : <Content
-                            weiRaised={this.state.weiRaised}
-                            rate = {this.state.rate}
-                            cap = {this.state.cap}
-                            minContribution = {this.state.minContribution}
-                            mintingFinished = {this.state.mintingFinished}
-                            hasEnded = {this.state.hasEnded}
-                            walletAddr = {this.state.walletAddr}
-                            ownerAddr = {this.state.ownerAddr}
-                            tokenAddr = {this.state.tokenAddr}
+          <div>
+              { this.state.loading
+                  ? <p class='text-center'>Loading...</p>
+                  : <Content
+                      weiRaised={this.state.weiRaised}
+                      rate = {this.state.rate}
+                      cap = {this.state.cap}
+                      contributors = {this.state.contributors}
+                      progressPercent = {this.state.progressPercent}
+                      progressBar = {this.state.progressBar}
+                      minContribution = {this.state.minContribution}
+                      mintingFinished = {this.state.mintingFinished}
+                      hasEnded = {this.state.hasEnded}
+                      walletAddr = {this.state.walletAddr}
+                      ownerAddr = {this.state.ownerAddr}
+                      tokenAddr = {this.state.tokenAddr}
 
-                            startTime = {this.state.startTime}
-                            endTime = {this.state.endTime}
+                      startTime = {this.state.startTime}
+                      endTime = {this.state.endTime}
 
-                            successTransfers = {this.state.successTransfers} />
-                    }
-                </div>
-            </div>
+                      successTransfers = {this.state.successTransfers} />
+              }
+        </div>
         )
     }
 }
