@@ -8,7 +8,7 @@ import Content from './Content'
 import 'bootstrap/dist/css/bootstrap.css'
 import '../css/style.css'
 
-const config = require('../config');
+const config = require('../config')
 
 class App extends React.Component {
     constructor(props) {
@@ -32,18 +32,25 @@ class App extends React.Component {
             mintingFinished: false,
             whitelistingAgents: [],
             successTransfers: [],
+            transactions: {}, //{txHash, from, value, status, block, timestamp(age)}
+            activeTable: "transactions" //"purchases"
         }
+
+        //BigNumber.config({ DECIMAL_PLACES: 2 })
 
         if (typeof web3 != 'undefined') {
             this.web3Provider = web3.currentProvider
-            console.log(this.web3Provider)
         } else {
-            console.log("undefined")
             this.web3Provider = new Web3.providers.HttpProvider(config.httpProvider)
-            console.log(this.web3Provider)
+        }
+
+        if(config.noMetamask) {
+            console.log("noMetamask")
+            this.web3Provider = new Web3.providers.HttpProvider(config.httpProvider)
         }
 
         this.web3 = new Web3(this.web3Provider)
+
 
         this.crowdsale = TruffleContract(MeshCrowdsale)
         this.crowdsale.setProvider(this.web3Provider)
@@ -53,16 +60,13 @@ class App extends React.Component {
     }
 
     componentDidMount() {
-        this.webSocketConn = new WebSocket(config.webSocketAddress)
-        this.watchWebSocketsEvents()
-
         this.crowdsale.at(config.crowdsaleAddress).then((instance) => {
             this.crowdsaleInstance = instance
             this.setState({crowdsaleAddr: instance.address})
 
             this.crowdsaleInstance.hasEnded.call().then((hasEnded) => {this.setState({ hasEnded: hasEnded })})
             this.crowdsaleInstance.mintingFinished.call().then((mintingFinished) =>
-                {this.setState({mintingFinished: mintingFinished})})
+                {this.setState({mintingFinished: mintingFinished})}) //TODO: update when finished
 
             this.crowdsaleInstance.wallet.call().then((walletAddr) => {this.setState({ walletAddr: walletAddr })})
             this.crowdsaleInstance.owner.call().then((ownerAddr) => {this.setState({ ownerAddr: ownerAddr })})
@@ -82,8 +86,26 @@ class App extends React.Component {
             })
 
             this.fetchWeiRaised()
+
             this.setState({loading: false})
             this.watchContractEvents()
+
+            this.web3.eth.getBlockNumber((error, blockNumber) => {
+                if(error) {
+                    console.log(error)
+                } else {
+                    this.lastBlockNumber = blockNumber
+                    this.getMinedTransactionsMultiBlocks(this.lastBlockNumber - 5, this.lastBlockNumber);
+                }
+            })
+
+            this.watchLatestBlock()
+            this.watchPendingTransactions()
+
+             if(config.noMetamask) {
+                //TODO
+                //this.getTxPoolTransactions()
+             }
 
         }).catch(function(error) {
             console.error(error)
@@ -92,49 +114,124 @@ class App extends React.Component {
 
     fetchWeiRaised() {
         this.crowdsaleInstance.weiRaised.call().then((weiRaised) => {
-            this.setState({ weiRaised: weiRaised.toNumber() / (10**18) })
-            this.setState({ progressPercent: Math.round(((this.state.weiRaised / this.state.cap)*100)*100)/100 })
-            this.setState({ progressBar: Math.round(((this.state.weiRaised / this.state.cap)*100)*100)/10000 })
-            this.setState({ contributors: this.state.contributors + 1 })
+            const ethRaised = weiRaised.toNumber() / (10**18)
+            this.setState({ weiRaised: ethRaised })
+            this.setState({ progressPercent: Math.round(((ethRaised / this.state.cap)*100)*100)/100 })
+            this.setState({ progressBar: Math.round(((ethRaised / this.state.cap)*100)*100)/10000 })
+            this.setState((prevState) => { return { contributors: prevState.contributors + 1 }})
         }).catch(function(error) {
             console.error(error)
         })
     }
 
-    proccessTxlist(data) {
-        //TODO
-        console.log(data)
+    //TODO
+    getTxPoolTransactions() {
+        this.web3._extend({
+            property: 'txpool',
+            methods: [new web3._extend.Method({
+                name: 'content',
+                call: 'txpool_content'
+            })]
+        })
+
+        this.web3.txpool.content((error, res) => {
+            Object.keys(res.pending).forEach(function(key) {
+                console.log(key, res.pending[key]);
+            })
+        })
     }
 
-    proccessSubscribeResponse(data) {
-        //TODO
-        console.log(data)
-    }
+    appendPendingTransaction(txHash) {
+        this.web3.eth.getTransaction(txHash, (error, transaction) => {
+            if (error) {
+                console.log("error: " + error)
+            } else {
+                if (config.testTransactions || transaction.to == this.crowdsaleInstance.address) {
+                    var transactions = this.state.transactions
+                    transactions[txHash] = {
+                        txHash: txHash,
+                        from: transaction.from,
+                        value: transaction.value.toNumber() / (10**18), //to ether
+                        status: "pending",
+                        block: -1,
+                        timestamp: Math.floor(Date.now() / 1000)}
 
-    proccessWelcome(data) {
-        console.log(data)
-        this.webSocketConn.send(JSON.stringify({"event": "txlist", "address": config.crowdsaleAddress}))
-        setInterval(() => {this.webSocketConn.send(JSON.stringify({"event": "ping"}))}, config.webSocketPingTime)
-    }
-
-    watchWebSocketsEvents() {
-        // listen to onmessage event
-        this.webSocketConn.onmessage = (evt) => {
-            var response = JSON.parse(evt.data)
-            if("event" in response) {
-                switch(response.event) {
-                    case "pong":
-                        console.log(evt)
-                        break
-                    case "welcome":
-                        this.proccessWelcome(response)
-                        break
-                    case "subscribe-txlist":
-                        this.proccessSubscribeResponse(response)
-                        break
+                    this.setState(transaction: transaction)
                 }
             }
+        })
+    }
+
+    appendMinedTransaction(txHash, value, blockTimestamp) {
+        this.web3.eth.getTransactionReceipt(txHash, (error, transaction) => {
+            if(error) {
+                console.log("error: " + error)
+            } else {
+                var transactions2 = this.state.transactions
+                transactions2[txHash] = {
+                    txHash: txHash,
+                    from: transaction.from,
+                    value: value / (10**18), //to ether
+                    status: transaction.status == "0x1" ? "OK" : "Failed",
+                    block: transaction.blockNumber,
+                    timestamp: blockTimestamp}
+
+                this.setState({transactions: transactions2})
+            }
+        })
+    }
+
+    watchPendingTransactions() {
+        this.web3.eth.filter("pending").watch((error, newPending) => {
+            if (error) {
+                console.log("error: " + error)
+            } else {
+                if (newPending in this.state.transactions) {
+                    console.log("duplicate pending transaction.")
+                    return
+                }
+
+                this.appendPendingTransaction(newPending)
+            }
+        })
+    }
+
+    getMinedTransactions(block) {
+        //console.log(block)
+        block.transactions.forEach(transaction => {
+            if (config.testTransactions || transaction.to == this.crowdsaleInstance.address) {
+                this.appendMinedTransaction(transaction.hash, transaction.value, block.timestamp)
+            }
+        })
+    }
+
+    getMinedTransactionsMultiBlocks(fromBlock, toBlock) {
+        for(var i = fromBlock; i <= toBlock; i++) {
+            this.web3.eth.getBlock(i, true, (error, block) => {
+                if(error) {
+                    console.log("error: " + error)
+                } else {
+                    this.getMinedTransactions(block)
+                }
+            })
         }
+    }
+
+    watchLatestBlock() {
+        //filter.stopWatching()
+        this.web3.eth.filter("latest").watch((error, blockHash) => {
+            if(error) {
+                console.log("error: " + error)
+            } else {
+                this.web3.eth.getBlock(blockHash, true, (error, block) => {
+                    if(error) {
+                        console.log("error: " + error)
+                    } else {
+                        this.getMinedTransactions(block)
+                    }
+                })
+            }
+        })
     }
 
     watchContractEvents() {
@@ -146,11 +243,11 @@ class App extends React.Component {
         event.watch((error, event) => {
             if(error) {
                 console.log("error: " + error)
-            }
-            else {
-                console.log("--> event: " + JSON.stringify(event))
+            } else {
+                //console.log("--> event: " + JSON.stringify(event))
                 //event.forEach(log => console.log(log.args))
                 this.fetchWeiRaised()
+
                 this.setState({successTransfers: [...this.state.successTransfers, {
                     from: event.args.purchaser,
                     ether: event.args.value.toNumber() / (10**18),
@@ -184,7 +281,9 @@ class App extends React.Component {
                       startTime = {this.state.startTime}
                       endTime = {this.state.endTime}
 
-                      successTransfers = {this.state.successTransfers} />
+                      successTransfers = {this.state.successTransfers}
+                      transactions = {this.state.transactions}
+                      activeTable = {this.state.activeTable} />
               }
         </div>
         )
