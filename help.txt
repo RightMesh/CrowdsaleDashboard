@@ -1,0 +1,2 @@
+
+geth --syncmode "fast" --rpcapi eth,web3,admin,db,debug,net,personal,txpool,shh --rpc --rpccorsdomain "http://localhost:8080" --rinkeby console 2>> geth.log

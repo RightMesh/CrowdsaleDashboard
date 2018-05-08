@@ -1,6 +1,6 @@
 import React from 'react'
 
-class Table extends React.Component {
+class PurchasesTable extends React.Component {
     render() {
         return (
             <div class='container'>
@@ -35,4 +35,4 @@ class Table extends React.Component {
     }
 }
 
-export default Table
+export default PurchasesTable

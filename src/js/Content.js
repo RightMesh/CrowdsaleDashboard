@@ -1,9 +1,20 @@
 import React from 'react'
-import Table from './Table'
+import PurchasesTable from './PurchasesTable'
+import TransactionsTable from './TransactionsTable'
 import Form from './Form'
 
 class Content extends React.Component {
+
     render() {
+
+        let table
+
+        if (this.props.activeTable == "purchases") {
+            table = (<PurchasesTable successTransfers = {this.props.successTransfers} />)
+        } else if (this.props.activeTable == "transactions") {
+            table = (<TransactionsTable transactions = {this.props.transactions} />)
+        }
+
         return (
           <section id='content'>
             <section class='header'>
@@ -23,7 +34,7 @@ class Content extends React.Component {
             </section>
 
                 <Form
-                    weiRaised={this.props.weiRaised}
+                    weiRaised = {this.props.weiRaised}
                     rate = {this.props.rate}
                     cap = {this.props.cap}
                     contributors = {this.props.contributors}
@@ -38,7 +49,8 @@ class Content extends React.Component {
                     startTime = {this.props.startTime}
                     endTime = {this.props.endTime} />
 
-                <Table successTransfers={this.props.successTransfers} />
+                {table}
+
             </section>
         )
     }
