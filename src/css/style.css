@@ -16,12 +16,12 @@ body {
 h1 {
   font-family: 'Montserrat', sans-serif;
   color: #FFF;
-  font-size: 42px;
+  font-size: 26px;
 }
 
 h2, .card-stat {
   font-weight: 600;
-  font-size: 24px;
+  font-size: 20px;
   font-family: 'Montserrat', sans-serif;
   color: #01434f;
 }
@@ -30,11 +30,21 @@ hr {
   border-top: 1px solid #01434f;
 }
 
+a:hover {
+  color: #00aa81;
+  text-decoration: none;
+}
+
+.logo {
+  height: 40px;
+  margin-bottom: 5px;
+}
+
 .header {
   background: #00aa81;
   background: -webkit-linear-gradient(15deg, #00aa81, #01434f);
   background: linear-gradient(75deg, #00aa81, #01434f);
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .wallet-stats p {
@@ -88,53 +98,57 @@ hr {
 
 /* ------------ Tables ------------ */
 
-table {
-  font-size: 12px;
-}
-
-thead {
+.link {
   font-family: 'Montserrat', sans-serif;
+  color: #01434f;
+  font-size: 18px;
+  border-bottom: 3px solid #FFF;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
-input, select {
-  border: 1.5px solid #01434f;
+.active {
+  border-bottom: 3px solid #01434f;
+  transition: 0.5s;
 }
 
-input:focus {
-  outline-color: #01434f;
+.ReactTable .rt-thead .rt-resizable-header-content {
+  font-weight: 700;
 }
 
-#contributionsTable_info, #contributionsTable_paginate {
-  font-size: 14px;
-  font-weight: 600;
+.ReactTable .rt-thead .rt-th.-sort-desc {
+  box-shadow: inset 0 -3px 0 0 #01434f;
 }
 
-.table th {
-  padding: 0.5rem;
-  background: #00aa81;
+.ReactTable .rt-thead .rt-th.-sort-asc {
+  box-shadow: inset 0 3px 0 0 #01434f;
 }
 
-table.dataTable thead th {
-  vertical-align: bottom;
-  border-bottom: 2px solid #01434f;
+.ReactTable .rt-tbody .rt-tr-group {
+  border-bottom: solid 1px rgba(1, 67, 79, 0.2);
 }
 
-table.dataTable.no-footer {
-  border-bottom: 1px solid #01434f;
+.ReactTable.-striped .rt-tr.-odd {
+  background: rgba(0, 170, 129, 0.2);
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-  border: 0;
-  background: rgba(0, 170, 129, 0.5);
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+.ReactTable.-highlight .rt-tbody .rt-tr:not(.-padRow):hover {
   background: #01434f;
-  border: 1px solid #01434f;
+  color: #FFF;
+  transition: 0.25s;
 }
 
-.even {
-  background-color: rgba(0, 170, 129, 0.3) !important;
+.ReactTable .-pagination .-btn {
+  color: #FFF;
+  background: #01434f;
+}
+
+.ReactTable .-pagination .-btn:not([disabled]):hover {
+    background: rgba(1, 67, 79, 0.8);
+}
+
+.no-padding {
+  padding: 0;
 }
 
 

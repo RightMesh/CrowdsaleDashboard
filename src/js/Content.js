@@ -1,18 +1,28 @@
-import React from 'react'
-import PurchasesTable from './PurchasesTable'
-import TransactionsTable from './TransactionsTable'
-import Form from './Form'
+import React from 'react';
+import PurchasesTable from './PurchasesTable';
+import TransactionsTable from './TransactionsTable';
+import Form from './Form';
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 
 class Content extends React.Component {
-
+    constructor() {
+      super();
+      this.state = {
+        colId: 1
+      }
+      this.setActiveCol = this.setActiveCol.bind(this);
+    }
+    setActiveCol(id){
+      this.setState({colId: id});
+    }
     render() {
 
-        let table
+        let table;
 
-        if (this.props.activeTable == "purchases") {
-            table = (<PurchasesTable successTransfers = {this.props.successTransfers} />)
-        } else if (this.props.activeTable == "transactions") {
+        if (this.state.colId == 1) {
             table = (<TransactionsTable transactions = {this.props.transactions} />)
+        } else if (this.state.colId == 2) {
+            table = (<PurchasesTable successTransfers = {this.props.successTransfers} />)
         }
 
         return (
@@ -48,7 +58,14 @@ class Content extends React.Component {
                     tokenAddr = {this.props.tokenAddr}
                     startTime = {this.props.startTime}
                     endTime = {this.props.endTime} />
-
+                <Router>
+                  <div class='container'>
+                    <div class="row">
+                      <Link className={this.state.colId === 1? "col-lg-6 text-center link active" : "col-lg-6 text-center link"} onClick={() => this.setActiveCol(1)} to="/">All Contributions</Link>
+                      <Link className={this.state.colId === 2? "col-lg-6 text-center link active" : "col-lg-6 text-center link"} onClick={() => this.setActiveCol(2)} to="/contributions">Successful Contributions</Link>
+                    </div>
+                  </div>
+                </Router>
                 {table}
 
             </section>

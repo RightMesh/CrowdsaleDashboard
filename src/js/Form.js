@@ -1,16 +1,15 @@
 import React from 'react'
 import Timestamp from 'react-timestamp';
+import ProgressBar from 'react-progress-bar.js';
 
-var ProgressBar = require('react-progress-bar.js');
-//import ProgressBar from 'react-progressbar.js'
 var Line = ProgressBar.Line;
 var options = {
-  strokeWidth: 3,
+  strokeWidth: 2,
   easing: 'easeInOut',
   duration: 1400,
   color: '#00aa81',
   trailColor: '#01434f',
-  trailWidth: 3,
+  trailWidth: 2,
   text: {
     style: {
       position: 'absolute',
@@ -19,7 +18,7 @@ var options = {
       padding: '0px',
       margin: '0px',
       transform: 'translate(-50%, -50%)',
-      fontSize: '24px',
+      fontSize: '20px',
       color: '#FFF'
     }
   }
