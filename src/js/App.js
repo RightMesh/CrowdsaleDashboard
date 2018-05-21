@@ -17,7 +17,7 @@ class App extends React.Component {
             loading: true,
             rate: 0,
             cap: 0,
-            contributors: 0,
+            contributors: -1,
             progressPercent: 0,
             progressBar: 0,
             minContribution: 0,
@@ -32,8 +32,7 @@ class App extends React.Component {
             mintingFinished: false,
             whitelistingAgents: [],
             successTransfers: [],
-            transactions: {}, //{txHash, from, value, status, block, timestamp(age)}
-            activeTable: "transactions" //"purchases"
+            transactions: {} //{txHash, from, value, status, block, timestamp(age)}
         }
 
         //BigNumber.config({ DECIMAL_PLACES: 2 })
@@ -155,7 +154,6 @@ class App extends React.Component {
                         status: "pending",
                         block: -1,
                         timestamp: Math.floor(Date.now() / 1000)}
-
                     this.setState(transaction: transaction)
                 }
             }
@@ -282,8 +280,7 @@ class App extends React.Component {
                       endTime = {this.state.endTime}
 
                       successTransfers = {this.state.successTransfers}
-                      transactions = {this.state.transactions}
-                      activeTable = {this.state.activeTable} />
+                      transactions = {this.state.transactions} />
               }
         </div>
         )

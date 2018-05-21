@@ -1,36 +1,51 @@
-import React from 'react'
+import React from 'react';
+import ReactTable from "react-table";
+import "react-table/react-table.css";
+import _ from "lodash";
 
 class PurchasesTable extends React.Component {
     render() {
+      var transferData = this.props.successTransfers;
+
+      const transferColumns = [{
+          Header: 'From',
+          accessor: 'from',
+          Footer: (
+            <span>
+              <strong>Average Contribution: </strong>{" "}
+              {_.round(_.mean(_.map(transferData, d => d.ether)), 2)} ETH
+            </span>
+          )
+        }, {
+          Header: 'Ether',
+          accessor: 'ether'
+        }, {
+          Header: 'Tokens',
+          accessor: 'tokens'
+        }, {
+          Header: 'Block',
+          accessor: 'blockNumber'
+        }];
+
         return (
-            <div class='container'>
-              <div class="row">
-                <div class="col-lg-6 col-md-12">
-                  <table id='contributionsTable' class='table'>
-                      <thead>
-                          <tr>
-                              <th>From</th>
-                              <th>Ether</th>
-                              <th>Tokens</th>
-                              <th>Block Number</th>
-                          </tr>
-                      </thead>
-                      <tbody >
-                          {this.props.successTransfers.map((transfer) => {
-                              return(
-                                  <tr>
-                                      <td>{transfer.from}</td>
-                                      <td>{transfer.ether}</td>
-                                      <td>{transfer.tokens}</td>
-                                      <td>{transfer.blockNumber}</td>
-                                  </tr>
-                              )
-                          })}
-                      </tbody>
-                  </table>
-                </div>
+          <div class='container'>
+            <div class="row">
+              <div class="col-lg-12 no-padding">
+                <ReactTable
+                  data={transferData}
+                  columns={transferColumns}
+                  defaultSorted={[
+                    {
+                      id: "blockNumber",
+                      desc: true
+                    }
+                  ]}
+                  defaultPageSize={10}
+                  className="-striped -highlight"
+                />
               </div>
             </div>
+          </div>
         )
     }
 }
