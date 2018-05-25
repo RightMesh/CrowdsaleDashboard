@@ -4,4 +4,8 @@
 # ignore node.js installed packages
 node_modules/
 
-package-lock.json
+#package-lock.json
+
+geth.log
+
+

@@ -3,6 +3,6 @@ module.exports = {
     webSocketAddress:   'wss://socket.etherscan.io/wshandler',
     webSocketPingTime:  10000,  //msec
     httpProvider:       'http://localhost:8545',
-    noMetamask:         false,
+    noMetamask:         true,
     testTransactions:   true
 }

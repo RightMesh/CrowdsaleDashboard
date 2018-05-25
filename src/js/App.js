@@ -35,8 +35,6 @@ class App extends React.Component {
             transactions: {} //{txHash, from, value, status, block, timestamp(age)}
         }
 
-        //BigNumber.config({ DECIMAL_PLACES: 2 })
-
         if (typeof web3 != 'undefined') {
             this.web3Provider = web3.currentProvider
         } else {
@@ -78,10 +76,10 @@ class App extends React.Component {
                 this.setState({ endTime: endTime.toNumber() })
             })
 
-            this.crowdsaleInstance.cap.call().then((cap) => {this.setState({ cap: cap.toNumber() / (10**18) })})
+            this.crowdsaleInstance.cap.call().then((cap) => {this.setState({ cap: cap.dividedBy(10**18).toNumber() })})
             this.crowdsaleInstance.rate.call().then((rate) => {this.setState({ rate: rate.toNumber() })})
             this.crowdsaleInstance.minimumContribution.call().then((minContribution) => {
-                this.setState({ minContribution: minContribution.toNumber() / (10**18) })
+                this.setState({ minContribution: minContribution.dividedBy(10**18).toNumber() })
             })
 
             this.fetchWeiRaised()
@@ -89,6 +87,7 @@ class App extends React.Component {
             this.setState({loading: false})
             this.watchContractEvents()
 
+//TODO: get last block from stored memory
             this.web3.eth.getBlockNumber((error, blockNumber) => {
                 if(error) {
                     console.log(error)
@@ -113,14 +112,24 @@ class App extends React.Component {
 
     fetchWeiRaised() {
         this.crowdsaleInstance.weiRaised.call().then((weiRaised) => {
-            const ethRaised = weiRaised.toNumber() / (10**18)
+            const ethRaised = this.precisionRound(weiRaised.dividedBy(10**18).toNumber(), 4)
             this.setState({ weiRaised: ethRaised })
+            //TODO: change to use method - round
             this.setState({ progressPercent: Math.round(((ethRaised / this.state.cap)*100)*100)/100 })
             this.setState({ progressBar: Math.round(((ethRaised / this.state.cap)*100)*100)/10000 })
             this.setState((prevState) => { return { contributors: prevState.contributors + 1 }})
         }).catch(function(error) {
             console.error(error)
         })
+    }
+
+    precisionRound(number, precision) {
+        var shift = function (number, exponent) {
+            var numArray = ("" + number).split("e")
+            return +(numArray[0] + "e" + (numArray[1] ? (+numArray[1] + exponent) : exponent))
+        }
+
+        return shift(Math.round(shift(number, +precision)), -precision)
     }
 
     //TODO
@@ -141,16 +150,20 @@ class App extends React.Component {
     }
 
     appendPendingTransaction(txHash) {
+        //console.log("check for pending: " + txHash)
         this.web3.eth.getTransaction(txHash, (error, transaction) => {
             if (error) {
                 console.log("error: " + error)
             } else {
-                if (config.testTransactions || transaction.to == this.crowdsaleInstance.address) {
+                if(transaction === null) {
+                    console.log("Pending transaction is null.")
+                } else if (config.testTransactions || transaction.to == this.crowdsaleInstance.address) {
+                    //console.log("pending: " + JSON.stringify(transaction))
                     var transactions = this.state.transactions
                     transactions[txHash] = {
                         txHash: txHash,
                         from: transaction.from,
-                        value: transaction.value.toNumber() / (10**18), //to ether
+                        value: this.precisionRound(transaction.value.dividedBy(10**18).toNumber(), 2),  //to ether
                         status: "pending",
                         block: -1,
                         timestamp: Math.floor(Date.now() / 1000)}
@@ -169,7 +182,7 @@ class App extends React.Component {
                 transactions2[txHash] = {
                     txHash: txHash,
                     from: transaction.from,
-                    value: value / (10**18), //to ether
+                    value: this.precisionRound(value.dividedBy(10**18).toNumber(), 2),  //to ether
                     status: transaction.status == "0x1" ? "OK" : "Failed",
                     block: transaction.blockNumber,
                     timestamp: blockTimestamp}
@@ -248,8 +261,8 @@ class App extends React.Component {
 
                 this.setState({successTransfers: [...this.state.successTransfers, {
                     from: event.args.purchaser,
-                    ether: event.args.value.toNumber() / (10**18),
-                    tokens: event.args.amount.toNumber() / (10**18),
+                    ether: this.precisionRound(event.args.value.dividedBy(10**18).toNumber(), 2),
+                    tokens: this.precisionRound(event.args.amount.dividedBy(10**18).toNumber(), 2),
                     blockNumber: event.blockNumber
                 }]
                 })
