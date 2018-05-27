@@ -32,10 +32,9 @@ class App extends React.Component {
             mintingFinished: false,
             whitelistingAgents: [],
             successTransfers: [],
+            advanced: false,
             transactions: {} //{txHash, from, value, status, block, timestamp(age)}
         }
-
-        //BigNumber.config({ DECIMAL_PLACES: 2 })
 
         if (typeof web3 != 'undefined') {
             this.web3Provider = web3.currentProvider
@@ -53,19 +52,12 @@ class App extends React.Component {
 
         this.crowdsale = TruffleContract(MeshCrowdsale)
         this.crowdsale.setProvider(this.web3Provider)
-
-        //this.watchContractEvents = this.watchContractEvents.bind(this)
-        //this.watchWebSocketsEvents = this.watchWebSocketsEvents.bind(this)
     }
 
     componentDidMount() {
         this.crowdsale.at(config.crowdsaleAddress).then((instance) => {
             this.crowdsaleInstance = instance
             this.setState({crowdsaleAddr: instance.address})
-
-            this.crowdsaleInstance.hasEnded.call().then((hasEnded) => {this.setState({ hasEnded: hasEnded })})
-            this.crowdsaleInstance.mintingFinished.call().then((mintingFinished) =>
-                {this.setState({mintingFinished: mintingFinished})}) //TODO: update when finished
 
             this.crowdsaleInstance.wallet.call().then((walletAddr) => {this.setState({ walletAddr: walletAddr })})
             this.crowdsaleInstance.owner.call().then((ownerAddr) => {this.setState({ ownerAddr: ownerAddr })})
@@ -78,10 +70,10 @@ class App extends React.Component {
                 this.setState({ endTime: endTime.toNumber() })
             })
 
-            this.crowdsaleInstance.cap.call().then((cap) => {this.setState({ cap: cap.toNumber() / (10**18) })})
+            this.crowdsaleInstance.cap.call().then((cap) => {this.setState({ cap: cap.dividedBy(10**18).toNumber() })})
             this.crowdsaleInstance.rate.call().then((rate) => {this.setState({ rate: rate.toNumber() })})
             this.crowdsaleInstance.minimumContribution.call().then((minContribution) => {
-                this.setState({ minContribution: minContribution.toNumber() / (10**18) })
+                this.setState({ minContribution: minContribution.dividedBy(10**18).toNumber() })
             })
 
             this.fetchWeiRaised()
@@ -89,32 +81,48 @@ class App extends React.Component {
             this.setState({loading: false})
             this.watchContractEvents()
 
-            this.web3.eth.getBlockNumber((error, blockNumber) => {
-                if(error) {
-                    console.log(error)
-                } else {
-                    this.lastBlockNumber = blockNumber
-                    this.getMinedTransactionsMultiBlocks(this.lastBlockNumber - 5, this.lastBlockNumber);
+            this.pollEndedAndMintingFinished(this.crowdsaleInstance)
+
+            //If advanced, get incoming transactions details.
+            if(config.advanced) {
+                this.setState({advanced: true})
+                this.web3.eth.getBlockNumber((error, blockNumber) => {
+                    if(error) {
+                        console.log(error)
+                    } else {
+                        this.lastBlockNumber = blockNumber
+                        this.getMinedTransactionsMultiBlocks(this.lastBlockNumber - 5, this.lastBlockNumber);
+                    }
+                })
+
+                this.watchLatestBlock()
+
+                //If run with ethereum full synced node, get data from tx pool.
+                if(config.noMetamask) {
+                    //this.getTxPoolTransactions()
+                    this.watchPendingTransactions()
                 }
-            })
-
-            this.watchLatestBlock()
-            this.watchPendingTransactions()
-
-             if(config.noMetamask) {
-                //TODO
-                //this.getTxPoolTransactions()
-             }
+            }
 
         }).catch(function(error) {
             console.error(error)
         })
     }
 
+    pollEndedAndMintingFinished() {
+        this.crowdsaleInstance.mintingFinished.call().then((mintingFinished) =>
+                        {this.setState({mintingFinished: mintingFinished})})
+
+        this.crowdsaleInstance.hasEnded.call().then((hasEnded) => {this.setState({ hasEnded: hasEnded })})
+
+        setTimeout(() => {this.pollEndedAndMintingFinished()}, config.pollInterval);
+    }
+
     fetchWeiRaised() {
         this.crowdsaleInstance.weiRaised.call().then((weiRaised) => {
-            const ethRaised = weiRaised.toNumber() / (10**18)
+            const ethRaised = this.precisionRound(weiRaised.dividedBy(10**18).toNumber(), 4)
             this.setState({ weiRaised: ethRaised })
+            //TODO: change to use method - round
             this.setState({ progressPercent: Math.round(((ethRaised / this.state.cap)*100)*100)/100 })
             this.setState({ progressBar: Math.round(((ethRaised / this.state.cap)*100)*100)/10000 })
             this.setState((prevState) => { return { contributors: prevState.contributors + 1 }})
@@ -123,7 +131,16 @@ class App extends React.Component {
         })
     }
 
-    //TODO
+    precisionRound(number, precision) {
+        var shift = function (number, exponent) {
+            var numArray = ("" + number).split("e")
+            return +(numArray[0] + "e" + (numArray[1] ? (+numArray[1] + exponent) : exponent))
+        }
+
+        return shift(Math.round(shift(number, +precision)), -precision)
+    }
+
+    //TODO: test this method
     getTxPoolTransactions() {
         this.web3._extend({
             property: 'txpool',
@@ -141,16 +158,20 @@ class App extends React.Component {
     }
 
     appendPendingTransaction(txHash) {
+        //console.log("check for pending: " + txHash)
         this.web3.eth.getTransaction(txHash, (error, transaction) => {
             if (error) {
                 console.log("error: " + error)
             } else {
-                if (config.testTransactions || transaction.to == this.crowdsaleInstance.address) {
+                if(transaction === null) {
+                    console.log("Pending transaction is null.")
+                } else if (config.testTransactions || transaction.to == this.crowdsaleInstance.address) {
+                    console.log("pending: " + JSON.stringify(transaction))
                     var transactions = this.state.transactions
                     transactions[txHash] = {
                         txHash: txHash,
                         from: transaction.from,
-                        value: transaction.value.toNumber() / (10**18), //to ether
+                        value: this.precisionRound(transaction.value.dividedBy(10**18).toNumber(), 2),  //to ether
                         status: "pending",
                         block: -1,
                         timestamp: Math.floor(Date.now() / 1000)}
@@ -165,16 +186,22 @@ class App extends React.Component {
             if(error) {
                 console.log("error: " + error)
             } else {
-                var transactions2 = this.state.transactions
-                transactions2[txHash] = {
-                    txHash: txHash,
-                    from: transaction.from,
-                    value: value / (10**18), //to ether
-                    status: transaction.status == "0x1" ? "OK" : "Failed",
-                    block: transaction.blockNumber,
-                    timestamp: blockTimestamp}
+                if(transaction == null) {
+                    //TODO: store in memory and try to fetch later
+                    console.log("Metamask returned a null for: " + txHash)
+                } else {
+                    //console.log(transaction)
+                    var transactions2 = this.state.transactions
+                    transactions2[txHash] = {
+                        txHash: txHash,
+                        from: transaction.from,
+                        value: this.precisionRound(value.dividedBy(10**18).toNumber(), 2),  //to ether
+                        status: transaction.status == "0x1" ? "OK" : "Failed",
+                        block: transaction.blockNumber,
+                        timestamp: blockTimestamp}
 
-                this.setState({transactions: transactions2})
+                    this.setState({transactions: transactions2})
+                }
             }
         })
     }
@@ -216,6 +243,7 @@ class App extends React.Component {
     }
 
     watchLatestBlock() {
+        //TODO: check this
         //filter.stopWatching()
         this.web3.eth.filter("latest").watch((error, blockHash) => {
             if(error) {
@@ -248,8 +276,8 @@ class App extends React.Component {
 
                 this.setState({successTransfers: [...this.state.successTransfers, {
                     from: event.args.purchaser,
-                    ether: event.args.value.toNumber() / (10**18),
-                    tokens: event.args.amount.toNumber() / (10**18),
+                    ether: this.precisionRound(event.args.value.dividedBy(10**18).toNumber(), 2),
+                    tokens: this.precisionRound(event.args.amount.dividedBy(10**18).toNumber(), 2),
                     blockNumber: event.blockNumber
                 }]
                 })
@@ -275,10 +303,12 @@ class App extends React.Component {
                       walletAddr = {this.state.walletAddr}
                       ownerAddr = {this.state.ownerAddr}
                       tokenAddr = {this.state.tokenAddr}
+                      crowdsaleAddr = {this.state.crowdsaleAddr}
 
                       startTime = {this.state.startTime}
                       endTime = {this.state.endTime}
 
+                      advanced = {this.state.advanced}
                       successTransfers = {this.state.successTransfers}
                       transactions = {this.state.transactions} />
               }

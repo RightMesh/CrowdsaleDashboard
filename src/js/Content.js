@@ -8,7 +8,7 @@ class Content extends React.Component {
     constructor() {
       super();
       this.state = {
-        colId: 1
+        colId: 2
       }
       this.setActiveCol = this.setActiveCol.bind(this);
     }
@@ -35,9 +35,10 @@ class Content extends React.Component {
                     <h1>Crowdsale Dashboard</h1>
                   </div>
                   <div class="col-lg-4 col-md-4 col-sm-12 align-self-end wallet-stats">
-                    <p>Wallet Address: 0x671d8610bb9abb89b0313e2ee234d1c756e1092a</p>
-                    <p>Owner Address: 0x671d8610bb9abb89b0313e2ee234d1c756e1092a</p>
-                    <p>Token Address: 0x98873928fd0c20e692e0e35dcefdfbec5e945755</p>
+                    <p>Crowdsale Address: {this.props.crowdsaleAddr}</p>
+                    <p>Wallet Address: {this.props.walletAddr}</p>
+                    <p>Owner Address: {this.props.ownerAddr}</p>
+                    <p>Token Address: {this.props.tokenAddr}</p>
                   </div>
                 </div>
               </div>
@@ -58,14 +59,26 @@ class Content extends React.Component {
                     tokenAddr = {this.props.tokenAddr}
                     startTime = {this.props.startTime}
                     endTime = {this.props.endTime} />
-                <Router>
-                  <div class='container'>
-                    <div class="row">
-                      <Link className={this.state.colId === 1? "col-lg-6 text-center link active" : "col-lg-6 text-center link"} onClick={() => this.setActiveCol(1)} to="/">All Contributions</Link>
-                      <Link className={this.state.colId === 2? "col-lg-6 text-center link active" : "col-lg-6 text-center link"} onClick={() => this.setActiveCol(2)} to="/contributions">Successful Contributions</Link>
-                    </div>
-                  </div>
-                </Router>
+
+                {
+                    this.props.advanced
+                        ?  <Router>
+                                <div class='container'>
+                                    <div class="row">
+                                        <Link className={this.state.colId === 2 ? "col-lg-6 text-center link active" : "col-lg-6 text-center link"} onClick={() => this.setActiveCol(2)} to="/">Successful Contributions</Link>
+                                        <Link className={this.state.colId === 1 ? "col-lg-6 text-center link active" : "col-lg-6 text-center link"} onClick={() => this.setActiveCol(1)} to="/">Incoming Transactions</Link>
+                                    </div>
+                                </div>
+                            </Router>
+                        : <Router>
+                            <div class='container'>
+                                <div class="row">
+                                    <Link className={this.state.colId === 2 ? "col-lg-6 text-center link active" : "col-lg-6 text-center link"} onClick={() => this.setActiveCol(2)} to="/contributions">Successful Contributions</Link>
+                                </div>
+                            </div>
+                          </Router>
+                }
+
                 {table}
 
             </section>
