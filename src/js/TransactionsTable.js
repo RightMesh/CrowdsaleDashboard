@@ -5,6 +5,10 @@ import _ from "lodash";
 
 class TransactionsTable extends React.Component {
   render() {
+      if(this.props.transactions == null) {
+        return
+      }
+
       var transactionData = Object.keys(this.props.transactions).map(key => {
           return {
             from: this.props.transactions[key].from,

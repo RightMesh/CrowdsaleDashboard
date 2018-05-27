@@ -32,6 +32,7 @@ class App extends React.Component {
             mintingFinished: false,
             whitelistingAgents: [],
             successTransfers: [],
+            advanced: false,
             transactions: {} //{txHash, from, value, status, block, timestamp(age)}
         }
 
@@ -51,9 +52,6 @@ class App extends React.Component {
 
         this.crowdsale = TruffleContract(MeshCrowdsale)
         this.crowdsale.setProvider(this.web3Provider)
-
-        //this.watchContractEvents = this.watchContractEvents.bind(this)
-        //this.watchWebSocketsEvents = this.watchWebSocketsEvents.bind(this)
     }
 
     componentDidMount() {
@@ -87,23 +85,26 @@ class App extends React.Component {
             this.setState({loading: false})
             this.watchContractEvents()
 
-//TODO: get last block from stored memory
-            this.web3.eth.getBlockNumber((error, blockNumber) => {
-                if(error) {
-                    console.log(error)
-                } else {
-                    this.lastBlockNumber = blockNumber
-                    this.getMinedTransactionsMultiBlocks(this.lastBlockNumber - 5, this.lastBlockNumber);
+            //If advanced, get incoming transactions details.
+            if(config.advanced) {
+                this.setState({advanced: true})
+                this.web3.eth.getBlockNumber((error, blockNumber) => {
+                    if(error) {
+                        console.log(error)
+                    } else {
+                        this.lastBlockNumber = blockNumber
+                        this.getMinedTransactionsMultiBlocks(this.lastBlockNumber - 5, this.lastBlockNumber);
+                    }
+                })
+
+                this.watchLatestBlock()
+
+                //If run with ethereum full synced node, get data from tx pool.
+                if(config.noMetamask) {
+                    //this.getTxPoolTransactions()
+                    this.watchPendingTransactions()
                 }
-            })
-
-            this.watchLatestBlock()
-            this.watchPendingTransactions()
-
-             if(config.noMetamask) {
-                //TODO
-                //this.getTxPoolTransactions()
-             }
+            }
 
         }).catch(function(error) {
             console.error(error)
@@ -132,7 +133,7 @@ class App extends React.Component {
         return shift(Math.round(shift(number, +precision)), -precision)
     }
 
-    //TODO
+    //TODO: test this method
     getTxPoolTransactions() {
         this.web3._extend({
             property: 'txpool',
@@ -158,7 +159,7 @@ class App extends React.Component {
                 if(transaction === null) {
                     console.log("Pending transaction is null.")
                 } else if (config.testTransactions || transaction.to == this.crowdsaleInstance.address) {
-                    //console.log("pending: " + JSON.stringify(transaction))
+                    console.log("pending: " + JSON.stringify(transaction))
                     var transactions = this.state.transactions
                     transactions[txHash] = {
                         txHash: txHash,
@@ -178,16 +179,22 @@ class App extends React.Component {
             if(error) {
                 console.log("error: " + error)
             } else {
-                var transactions2 = this.state.transactions
-                transactions2[txHash] = {
-                    txHash: txHash,
-                    from: transaction.from,
-                    value: this.precisionRound(value.dividedBy(10**18).toNumber(), 2),  //to ether
-                    status: transaction.status == "0x1" ? "OK" : "Failed",
-                    block: transaction.blockNumber,
-                    timestamp: blockTimestamp}
+                if(transaction == null) {
+                    //TODO: store in memory and try to fetch later
+                    console.log("Metamask returned a null for: " + txHash)
+                } else {
+                    //console.log(transaction)
+                    var transactions2 = this.state.transactions
+                    transactions2[txHash] = {
+                        txHash: txHash,
+                        from: transaction.from,
+                        value: this.precisionRound(value.dividedBy(10**18).toNumber(), 2),  //to ether
+                        status: transaction.status == "0x1" ? "OK" : "Failed",
+                        block: transaction.blockNumber,
+                        timestamp: blockTimestamp}
 
-                this.setState({transactions: transactions2})
+                    this.setState({transactions: transactions2})
+                }
             }
         })
     }
@@ -229,6 +236,7 @@ class App extends React.Component {
     }
 
     watchLatestBlock() {
+        //TODO: check this
         //filter.stopWatching()
         this.web3.eth.filter("latest").watch((error, blockHash) => {
             if(error) {
@@ -292,6 +300,7 @@ class App extends React.Component {
                       startTime = {this.state.startTime}
                       endTime = {this.state.endTime}
 
+                      advanced = {this.state.advanced}
                       successTransfers = {this.state.successTransfers}
                       transactions = {this.state.transactions} />
               }
