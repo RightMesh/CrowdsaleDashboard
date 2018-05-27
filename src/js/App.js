@@ -263,7 +263,7 @@ class App extends React.Component {
             if(error) {
                 console.log("error: " + error)
             } else {
-                //console.log("--> event: " + JSON.stringify(event))
+                console.log("--> event: " + JSON.stringify(event))
                 //event.forEach(log => console.log(log.args))
                 this.fetchWeiRaised()
 

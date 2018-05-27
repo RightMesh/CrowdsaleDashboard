@@ -64,7 +64,7 @@ class Content extends React.Component {
                         ?  <Router>
                                 <div class='container'>
                                     <div class="row">
-                                        <Link className={this.state.colId === 2 ? "col-lg-6 text-center link active" : "col-lg-6 text-center link"} onClick={() => this.setActiveCol(2)} to="/contributions">Successful Contributions</Link>
+                                        <Link className={this.state.colId === 2 ? "col-lg-6 text-center link active" : "col-lg-6 text-center link"} onClick={() => this.setActiveCol(2)} to="/">Successful Contributions</Link>
                                         <Link className={this.state.colId === 1 ? "col-lg-6 text-center link active" : "col-lg-6 text-center link"} onClick={() => this.setActiveCol(1)} to="/">Incoming Transactions</Link>
                                     </div>
                                 </div>

@@ -36,7 +36,12 @@ class TransactionsTable extends React.Component {
           accessor: 'status'
         }, {
           Header: 'Age',
-          accessor: 'timestamp'
+          accessor: 'timestamp',
+          Cell: ({row}) => (
+            <div>
+                {Math.floor((((new Date).getTime()/1000) - row.timestamp) / 3600)} h {Math.floor(((((new Date).getTime()/1000) - row.timestamp) % 3600) / 60)} m {(((Math.floor((new Date).getTime()/1000)) - row.timestamp) % 60)} s
+            </div>
+          )
         }, {
           Header: 'Block',
           accessor: 'block'
