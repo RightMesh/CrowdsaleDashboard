@@ -35,9 +35,10 @@ class Content extends React.Component {
                     <h1>Crowdsale Dashboard</h1>
                   </div>
                   <div class="col-lg-4 col-md-4 col-sm-12 align-self-end wallet-stats">
-                    <p>Wallet Address: 0x671d8610bb9abb89b0313e2ee234d1c756e1092a</p>
-                    <p>Owner Address: 0x671d8610bb9abb89b0313e2ee234d1c756e1092a</p>
-                    <p>Token Address: 0x98873928fd0c20e692e0e35dcefdfbec5e945755</p>
+                    <p>Crowdsale Address: {this.props.crowdsaleAddr}</p>
+                    <p>Wallet Address: {this.props.walletAddr}</p>
+                    <p>Owner Address: {this.props.ownerAddr}</p>
+                    <p>Token Address: {this.props.tokenAddr}</p>
                   </div>
                 </div>
               </div>

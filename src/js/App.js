@@ -303,6 +303,7 @@ class App extends React.Component {
                       walletAddr = {this.state.walletAddr}
                       ownerAddr = {this.state.ownerAddr}
                       tokenAddr = {this.state.tokenAddr}
+                      crowdsaleAddr = {this.state.crowdsaleAddr}
 
                       startTime = {this.state.startTime}
                       endTime = {this.state.endTime}
