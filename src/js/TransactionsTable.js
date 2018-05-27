@@ -22,6 +22,7 @@ class TransactionsTable extends React.Component {
       const transactionColumns = [{
           Header: 'From',
           accessor: 'from',
+          width: 400,
           Footer: (
             <span>
               <strong>Average Contribution: </strong>{" "}
@@ -53,6 +54,7 @@ class TransactionsTable extends React.Component {
             <div class="row">
               <div class="col-lg-12 no-padding">
                 <ReactTable
+                  textAlign = "center"
                   data={transactionData}
                   columns={transactionColumns}
                   defaultSorted={[
@@ -61,7 +63,7 @@ class TransactionsTable extends React.Component {
                       desc: true
                     }
                   ]}
-                  defaultPageSize={10}
+                  defaultPageSize={25}
                   className="-striped -highlight"
                 />
               </div>

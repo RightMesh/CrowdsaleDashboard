@@ -10,6 +10,7 @@ class PurchasesTable extends React.Component {
       const transferColumns = [{
           Header: 'From',
           accessor: 'from',
+          width: 400,
           Footer: (
             <span>
               <strong>Average Contribution: </strong>{" "}
@@ -18,7 +19,7 @@ class PurchasesTable extends React.Component {
           )
         }, {
           Header: 'Ether',
-          accessor: 'ether'
+          accessor: 'ether',
         }, {
           Header: 'Tokens',
           accessor: 'tokens'
@@ -40,7 +41,7 @@ class PurchasesTable extends React.Component {
                       desc: true
                     }
                   ]}
-                  defaultPageSize={10}
+                  defaultPageSize={25}
                   className="-striped -highlight"
                 />
               </div>
