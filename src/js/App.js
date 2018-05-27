@@ -59,10 +59,6 @@ class App extends React.Component {
             this.crowdsaleInstance = instance
             this.setState({crowdsaleAddr: instance.address})
 
-            this.crowdsaleInstance.hasEnded.call().then((hasEnded) => {this.setState({ hasEnded: hasEnded })})
-            this.crowdsaleInstance.mintingFinished.call().then((mintingFinished) =>
-                {this.setState({mintingFinished: mintingFinished})}) //TODO: update when finished
-
             this.crowdsaleInstance.wallet.call().then((walletAddr) => {this.setState({ walletAddr: walletAddr })})
             this.crowdsaleInstance.owner.call().then((ownerAddr) => {this.setState({ ownerAddr: ownerAddr })})
             this.crowdsaleInstance.token.call().then((tokenAddr) => {this.setState({ tokenAddr: tokenAddr })})
@@ -84,6 +80,8 @@ class App extends React.Component {
 
             this.setState({loading: false})
             this.watchContractEvents()
+
+            this.pollEndedAndMintingFinished(this.crowdsaleInstance)
 
             //If advanced, get incoming transactions details.
             if(config.advanced) {
@@ -109,6 +107,15 @@ class App extends React.Component {
         }).catch(function(error) {
             console.error(error)
         })
+    }
+
+    pollEndedAndMintingFinished() {
+        this.crowdsaleInstance.mintingFinished.call().then((mintingFinished) =>
+                        {this.setState({mintingFinished: mintingFinished})})
+
+        this.crowdsaleInstance.hasEnded.call().then((hasEnded) => {this.setState({ hasEnded: hasEnded })})
+
+        setTimeout(() => {this.pollEndedAndMintingFinished()}, config.pollInterval);
     }
 
     fetchWeiRaised() {
