@@ -29,6 +29,7 @@ class App extends React.Component {
             ownerAddr: "0x0",
             tokenAddr: "0x0",
             hasEnded: false,
+            soldOut: false,
             mintingFinished: false,
             whitelistingAgents: [],
             successTransfers: [],
@@ -118,14 +119,25 @@ class App extends React.Component {
         setTimeout(() => {this.pollEndedAndMintingFinished()}, config.pollInterval);
     }
 
+    checkSoldOut(ethRaised) {
+        var delta = this.state.cap - ethRaised
+        delta = this.precisionRound(delta, 4)
+        console.log("Sold out delta: " + delta)
+        if(delta < this.state.minimumContribution) {
+            console.log("--> sold out!")
+            this.setState({ soldOut: true })
+        }
+    }
+
     fetchWeiRaised() {
         this.crowdsaleInstance.weiRaised.call().then((weiRaised) => {
             const ethRaised = this.precisionRound(weiRaised.dividedBy(10**18).toNumber(), 4)
             this.setState({ weiRaised: ethRaised })
-            //TODO: change to use method - round
             this.setState({ progressPercent: Math.round(((ethRaised / this.state.cap)*100)*100)/100 })
             this.setState({ progressBar: Math.round(((ethRaised / this.state.cap)*100)*100)/10000 })
             this.setState((prevState) => { return { contributors: prevState.contributors + 1 }})
+
+            this.checkSoldOut(ethRaised)
         }).catch(function(error) {
             console.error(error)
         })
@@ -300,6 +312,7 @@ class App extends React.Component {
                       minContribution = {this.state.minContribution}
                       mintingFinished = {this.state.mintingFinished}
                       hasEnded = {this.state.hasEnded}
+                      soldOut = {this.state.soldOut}
                       walletAddr = {this.state.walletAddr}
                       ownerAddr = {this.state.ownerAddr}
                       tokenAddr = {this.state.tokenAddr}
