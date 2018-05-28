@@ -54,6 +54,7 @@ class Content extends React.Component {
                     minContribution = {this.props.minContribution}
                     mintingFinished = {this.props.mintingFinished}
                     hasEnded = {this.props.hasEnded}
+                    soldOut = {this.props.soldOut}
                     walletAddr = {this.props.walletAddr}
                     ownerAddr = {this.props.ownerAddr}
                     tokenAddr = {this.props.tokenAddr}

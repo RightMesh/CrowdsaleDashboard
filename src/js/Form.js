@@ -50,6 +50,7 @@ class Form extends React.Component {
               <h3 class="card-stat">{this.props.contributors}</h3>
           </div>
           <div class="data-container col-lg-3 card-side text-center" >
+              <p>Sold Out: <strong>{this.props.soldOut.toString()}</strong></p>
               <p>Has Ended: <strong>{this.props.hasEnded.toString()}</strong></p>
               <p>Start Time: <strong><Timestamp time={this.props.startTime} format='full' /></strong></p>
               <p class="no-margin">End Time: <strong><Timestamp time={this.props.endTime} format='full' /></strong></p>
