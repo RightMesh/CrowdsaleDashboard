@@ -2,6 +2,7 @@ import React from 'react';
 import PurchasesTable from './PurchasesTable';
 import TransactionsTable from './TransactionsTable';
 import Form from './Form';
+import Finish from './Finish';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 
 class Content extends React.Component {
@@ -21,8 +22,10 @@ class Content extends React.Component {
 
         if (this.state.colId == 1) {
             table = (<TransactionsTable transactions = {this.props.transactions} />)
-        } else if (this.state.colId == 2) {
+        } else if (this.state.colId == 2 && this.props.soldOut == false) {
             table = (<PurchasesTable successTransfers = {this.props.successTransfers} />)
+        } else if (this.state.colId == 2 && this.props.soldOut == true) {
+           table = (<Finish />)
         }
 
         return (
