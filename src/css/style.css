@@ -55,14 +55,14 @@ a:hover {
 }
 
 .data-container {
-  padding: 1rem;
+  padding: 2rem 0.5rem;
   background: rgba(0, 170, 129, 0.3);
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
 }
 
 .data-container p {
   color: #01434f;
-  font-size: 16px;
+  font-size: 18px;
   font-family: 'Montserrat', sans-serif;
 }
 
@@ -73,19 +73,6 @@ a:hover {
 .progress-bar {
   margin-bottom: 1rem;
 }
-
-.card-title {
-  font-size: 18px;
-  font-family: 'Montserrat', sans-serif;
-  color: #01434f;
-}
-
-
-.card-side {
-  padding-top: 37px;
-  padding-bottom: 37px;
-}
-
 
 .double-margin {
   margin-bottom: 1rem;
@@ -122,6 +109,10 @@ a:hover {
 
 .ReactTable .rt-thead .rt-th.-sort-asc {
   box-shadow: inset 0 3px 0 0 #01434f;
+}
+
+.ReactTable .rt-tbody .rt-td {
+  text-align: center;
 }
 
 .ReactTable .rt-tbody .rt-tr-group {
