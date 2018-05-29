@@ -123,7 +123,8 @@ class App extends React.Component {
         var delta = this.state.cap - ethRaised
         delta = this.precisionRound(delta, 4)
         console.log("Sold out delta: " + delta)
-        if(delta < this.state.minimumContribution) {
+        console.log("min: " + this.state.minContribution)
+        if(delta < this.state.minContribution) {
             console.log("--> sold out!")
             this.setState({ soldOut: true })
         }
