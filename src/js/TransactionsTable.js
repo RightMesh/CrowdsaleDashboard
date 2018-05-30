@@ -63,7 +63,7 @@ class TransactionsTable extends React.Component {
                       desc: true
                     }
                   ]}
-                  defaultPageSize={25}
+                  defaultPageSize={10}
                   className="-striped -highlight"
                 />
               </div>

@@ -41,7 +41,7 @@ class PurchasesTable extends React.Component {
                       desc: true
                     }
                   ]}
-                  defaultPageSize={15}
+                  defaultPageSize={10}
                   className="-striped -highlight"
                 />
               </div>

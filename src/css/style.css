@@ -143,6 +143,88 @@ a:hover {
 }
 
 
+/* ------------ Finish ------------ */
+
+iframe {
+  visibility: hidden;
+  display: none;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+}
+
+.em-champagne-right, .em-champagne-left {
+  width: 100px;
+  height: 100px;
+}
+
+.em-champagne-right {
+  -webkit-animation: spin 1s linear infinite;
+  -mozs-animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
+}
+
+.em-champagne-left {
+  -webkit-animation: spin 1s linear infinite;
+  -mozs-animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
+  animation-direction: reverse;
+}
+
+@-moz-keyframes spin {
+    0% {
+      -moz-width: 150px;
+      -moz-height: 150px;
+      -moz-transform: rotate(0deg);
+    }
+    50% {
+      -moz-width: 200px;
+      -moz-height: 200px;
+      -moz-transform: rotate(180deg);
+    }
+    100% {
+      -moz-width: 150px;
+      -moz-height: 150px;
+      -moz-transform: rotate(360deg);
+    }
+}
+@-webkit-keyframes spin {
+    0% {
+      -webkit-width: 150px;
+      -webkit-height: 150px;
+      -webkit-transform: rotate(0deg);
+    }
+    50% {
+      -webkit-width: 200px;
+      -webkit-height: 200px;
+      -webkit-transform: rotate(180deg);
+    }
+    100% {
+      -webkit-width: 150px;
+      -webkit-height: 150px;
+      -webkit-transform: rotate(360deg);
+    }
+}
+@keyframes spin {
+  0% {
+    width: 150px;
+    height: 150px;
+    transform: rotate(0deg);
+  }
+  50% {
+    width: 200px;
+    height: 200px;
+    transform: rotate(180deg);
+  }
+  100% {
+    width: 150px;
+    height: 150px;
+    transform: rotate(360deg);
+  }
+}
+
 /* ------------ Media Queries ------------ */
 
 @media (min-width: 1300px) {
