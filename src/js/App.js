@@ -120,13 +120,15 @@ class App extends React.Component {
     }
 
     checkSoldOut(ethRaised) {
-        var delta = this.state.cap - ethRaised
-        delta = this.precisionRound(delta, 4)
-        console.log("Sold out delta: " + delta)
-        console.log("min: " + this.state.minContribution)
-        if(delta < this.state.minContribution) {
-            console.log("--> sold out!")
-            this.setState({ soldOut: true })
+        if(this.state.cap > 0) {
+            var delta = this.state.cap - ethRaised
+            delta = this.precisionRound(delta, 4)
+            console.log("Sold out delta: " + delta)
+            console.log("min: " + this.state.minContribution)
+            if(delta < this.state.minContribution) {
+                console.log("--> sold out!")
+                this.setState({ soldOut: true })
+            }
         }
     }
 
