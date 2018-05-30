@@ -281,6 +281,7 @@ class App extends React.Component {
             toBlock: 'latest'
         })
 
+        event.stopWatching()
         event.watch((error, event) => {
             if(error) {
                 console.log("error: " + error)
